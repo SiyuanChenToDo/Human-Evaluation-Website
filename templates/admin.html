@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}管理后台 - 科学猜想报告评估系统{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+    <h1>🔧 管理后台</h1>
+
+    <!-- 总览卡片 -->
+    <div class="stats-row">
+        <div class="stats-card">
+            <div class="stats-number">{{ summary.total_reports }}</div>
+            <div class="stats-desc">总报告数</div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-number completed-num">{{ summary.total_completed }}</div>
+            <div class="stats-desc">已完成评分</div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-number">{{ summary.completion_rate }}%</div>
+            <div class="stats-desc">完成率</div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-number">{{ summary.total_reviewers }}</div>
+            <div class="stats-desc">审稿人</div>
+        </div>
+    </div>
+
+    <!-- 快捷操作 -->
+    <div class="admin-actions">
+        <a href="{{ url_for('admin_assignments') }}" class="btn btn-primary">📋 分配管理</a>
+        <a href="{{ url_for('admin_reviewers') }}" class="btn btn-outline">👥 审稿人管理</a>
+        <a href="{{ url_for('admin_stats') }}" class="btn btn-outline">📊 统计分析</a>
+        <a href="{{ url_for('admin_export') }}" class="btn btn-outline">📥 导出数据</a>
+    </div>
+
+    <!-- 审稿人进度 -->
+    <h2>📈 审稿人进度</h2>
+    <div class="reviewer-progress-list">
+        {% for rp in reviewer_progress %}
+        <div class="reviewer-progress-item">
+            <div class="reviewer-progress-header">
+                <strong>{{ rp.name }}</strong>
+                <span>{{ rp.completed }} / {{ rp.total }} ({{ rp.completion_rate }}%)</span>
+            </div>
+            <div class="progress-bar small">
+                <div class="progress-fill" style="width: {{ rp.completion_rate }}%"></div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

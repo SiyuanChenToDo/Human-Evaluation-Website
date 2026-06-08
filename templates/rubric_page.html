@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}评估细则 - 科学猜想报告评估系统{% endblock %}
+
+{% block head %}
+<style>
+    .rubric-content {
+        background: white;
+        padding: 30px 40px;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        line-height: 1.8;
+        font-size: 0.95em;
+    }
+    .rubric-content h1 { font-size: 1.6em; margin-top: 1.2em; }
+    .rubric-content h2 { font-size: 1.3em; margin-top: 1.5em; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.4em; }
+    .rubric-content h3 { font-size: 1.1em; margin-top: 1.2em; }
+    .rubric-content table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 12px 0;
+        font-size: 0.9em;
+    }
+    .rubric-content th, .rubric-content td {
+        border: 1px solid #d1d5db;
+        padding: 8px 12px;
+        text-align: left;
+    }
+    .rubric-content th {
+        background: #f3f4f6;
+        font-weight: 600;
+    }
+    .rubric-content blockquote {
+        border-left: 4px solid #4f46e5;
+        padding: 8px 16px;
+        margin: 12px 0;
+        background: #f8f9ff;
+        border-radius: 0 8px 8px 0;
+        color: #374151;
+    }
+    .rubric-content code {
+        background: #f3f4f6;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.9em;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="rubric-content">
+    {{ content|safe }}
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="javascript:history.back()" class="btn btn-outline">← 返回</a>
+</div>
+{% endblock %}

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}科学猜想报告评估系统{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['\\[', '\\]']],
+        processEscapes: false
+      },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+      }
+    };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">🧪 科学猜想报告评估系统</a>
+            <div class="nav-links">
+                {% if session.reviewer_id %}
+                    {% if session.reviewer_id == 'admin' %}
+                        <a href="{{ url_for('admin') }}" class="nav-link">管理后台</a>
+                        <a href="{{ url_for('logout') }}" class="nav-link">退出</a>
+                    {% else %}
+                        <a href="{{ url_for('dashboard') }}" class="nav-link">我的工作台</a>
+                        <span class="nav-user">👤 {{ session.reviewer_name }}</span>
+                        <a href="{{ url_for('logout') }}" class="nav-link">退出</a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="flash-messages">
+              {% for category, message in messages %}
+                <div class="flash flash-{{ category }}">{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <p>科学猜想报告人工评估系统 · Flask + SQLite · 本地部署</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

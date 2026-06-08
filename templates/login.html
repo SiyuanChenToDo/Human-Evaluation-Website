@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}登录 - 科学猜想报告评估系统{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-card">
+        <h1>🧪 科学猜想报告评估系统</h1>
+        <p class="login-subtitle">150 份 AI 生成的科学猜想报告 · 人工评估平台</p>
+
+        <div class="login-stats">
+            <div class="stat-item">
+                <span class="stat-value">150</span>
+                <span class="stat-label">份报告</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">5</span>
+                <span class="stat-label">个维度</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">{{ reviewer_count }}</span>
+                <span class="stat-label">位审稿人</span>
+            </div>
+        </div>
+
+        {% if admin_mode %}
+        <form method="POST" class="login-form">
+            <label for="password">管理员密码：</label>
+            <input type="password" name="password" id="password" required
+                   style="width:100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 1em; margin-bottom: 20px;"
+                   placeholder="请输入管理员密码">
+            <button type="submit" class="btn btn-primary btn-lg">🔧 进入管理后台</button>
+        </form>
+        <div class="login-admin-link">
+            <a href="{{ url_for('login') }}">← 返回审稿人登录</a>
+        </div>
+        {% else %}
+        <form method="POST" class="login-form">
+            <label for="reviewer">选择审稿人身份：</label>
+            <select name="reviewer_id" id="reviewer" required>
+                <option value="">-- 请选择 --</option>
+                {% for r in reviewers %}
+                <option value="{{ r.id }}">{{ r.name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary btn-lg">🔑 进入系统</button>
+        </form>
+        <div class="login-admin-link">
+            <a href="{{ url_for('admin_login') }}">🔧 管理员入口</a>
+        </div>
+        <div class="login-info">
+            <h3>📋 评分须知</h3>
+            <ul>
+                <li>本次评估包含 <strong>5 个维度</strong>：新颖性(Nov)、重要性(Sig)、科学严谨性(Eff)、清晰度(Cla)、可行性(Fea)</li>
+                <li>每个维度 <strong>0-10 分</strong>整数评分</li>
+                <li>预计每篇报告阅读 + 评分需要 <strong>15-25 分钟</strong></li>
+                <li>部分报告会由多位审稿人独立评估（用于信度检验）</li>
+                <li>请根据<a href="/static/rubric.html" target="_blank">📄 评估细则</a>进行评分</li>
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

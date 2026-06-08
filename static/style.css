@@ -1,0 +1,604 @@
+/* 科学猜想报告评估系统 — 简洁学术风格 */
+
+/* ---- Reset & Base ---- */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
+    background: #f5f5f7;
+    color: #1f2937;
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-container {
+    flex: 1;
+    max-width: 1100px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 24px 20px;
+}
+
+/* ---- Navbar ---- */
+.navbar {
+    background: white;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 0 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.nav-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 56px;
+}
+
+.nav-brand {
+    font-weight: 700;
+    font-size: 1.1em;
+    color: #4f46e5;
+    text-decoration: none;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.nav-link {
+    color: #4b5563;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9em;
+    transition: color 0.2s;
+}
+
+.nav-link:hover {
+    color: #4f46e5;
+}
+
+.nav-user {
+    color: #6b7280;
+    font-size: 0.9em;
+}
+
+/* ---- Footer ---- */
+.footer {
+    text-align: center;
+    padding: 16px;
+    color: #9ca3af;
+    font-size: 0.8em;
+    border-top: 1px solid #e5e7eb;
+    margin-top: 40px;
+}
+
+/* ---- Buttons ---- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.95em;
+    font-weight: 600;
+    cursor: pointer;
+    border: 2px solid transparent;
+    text-decoration: none;
+    transition: all 0.2s;
+    gap: 6px;
+}
+
+.btn-primary {
+    background: #4f46e5;
+    color: white;
+    border-color: #4f46e5;
+}
+
+.btn-primary:hover {
+    background: #4338ca;
+    border-color: #4338ca;
+}
+
+.btn-outline {
+    background: white;
+    color: #4f46e5;
+    border-color: #4f46e5;
+}
+
+.btn-outline:hover {
+    background: #f5f3ff;
+}
+
+.btn-sm {
+    padding: 6px 14px;
+    font-size: 0.85em;
+}
+
+.btn-lg {
+    padding: 14px 32px;
+    font-size: 1.1em;
+}
+
+.btn-danger {
+    background: #dc2626;
+    color: white;
+    border-color: #dc2626;
+}
+
+/* ---- Flash Messages ---- */
+.flash-messages {
+    margin-bottom: 20px;
+}
+
+.flash {
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.flash-success {
+    background: #ecfdf5;
+    border: 1px solid #059669;
+    color: #065f46;
+}
+
+.flash-error {
+    background: #fef2f2;
+    border: 1px solid #dc2626;
+    color: #991b1b;
+}
+
+.flash-info {
+    background: #eff6ff;
+    border: 1px solid #3b82f6;
+    color: #1e40af;
+}
+
+.flash-warning {
+    background: #fffbeb;
+    border: 1px solid #d97706;
+    color: #92400e;
+}
+
+/* ---- Progress Bars ---- */
+.progress-section {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 24px;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 12px;
+    background: #e5e7eb;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.progress-bar.small {
+    height: 8px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4f46e5, #7c3aed);
+    border-radius: 6px;
+    transition: width 0.5s ease;
+}
+
+/* ---- Stats Cards ---- */
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.stats-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    text-align: center;
+}
+
+.stats-number {
+    font-size: 2em;
+    font-weight: 700;
+    color: #4f46e5;
+}
+
+.stats-number.pending {
+    color: #f59e0b;
+}
+
+.stats-number.completed-num {
+    color: #059669;
+}
+
+.stats-desc {
+    font-size: 0.85em;
+    color: #6b7280;
+    margin-top: 4px;
+}
+
+/* ---- Badges ---- */
+.badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+}
+
+.pending-badge {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.completed-badge {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+/* ---- Status Tags ---- */
+.status-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: 600;
+}
+
+.pending-tag {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.completed-tag {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+/* ---- Search ---- */
+.search-bar {
+    margin-bottom: 24px;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    font-size: 1em;
+    transition: border-color 0.2s;
+}
+
+.search-bar input:focus {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+/* ---- Report Cards ---- */
+.report-section {
+    margin-bottom: 32px;
+}
+
+.report-section h2 {
+    margin-bottom: 16px;
+    font-size: 1.2em;
+}
+
+.report-list {
+    display: grid;
+    gap: 12px;
+}
+
+.report-card {
+    background: white;
+    padding: 16px 20px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: box-shadow 0.2s;
+    gap: 16px;
+}
+
+.report-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.report-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.report-id {
+    font-weight: 700;
+    color: #4f46e5;
+    font-size: 0.9em;
+}
+
+.report-date {
+    color: #9ca3af;
+    font-size: 0.85em;
+}
+
+.report-card-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.report-card-body h3 {
+    font-size: 0.95em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 500px;
+}
+
+.report-card-body a {
+    color: #1f2937;
+    text-decoration: none;
+}
+
+.report-card-body a:hover {
+    color: #4f46e5;
+}
+
+.report-card-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+/* ---- Login Page ---- */
+.login-container {
+    display: flex;
+    justify-content: center;
+    padding-top: 40px;
+}
+
+.login-card {
+    background: white;
+    padding: 40px;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    max-width: 520px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+
+.login-card h1 {
+    margin-bottom: 8px;
+    color: #1f2937;
+}
+
+.login-subtitle {
+    color: #6b7280;
+    margin-bottom: 24px;
+}
+
+.login-stats {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-bottom: 28px;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.8em;
+    font-weight: 700;
+    color: #4f46e5;
+}
+
+.stat-label {
+    font-size: 0.8em;
+    color: #6b7280;
+}
+
+.login-form {
+    margin-bottom: 20px;
+}
+
+.login-form label {
+    display: block;
+    text-align: left;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.login-form select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1em;
+    margin-bottom: 20px;
+    appearance: auto;
+}
+
+.login-admin-link {
+    margin: 16px 0 24px;
+}
+
+.login-admin-link a {
+    color: #6b7280;
+    font-size: 0.9em;
+    text-decoration: none;
+}
+
+.login-admin-link a:hover {
+    color: #4f46e5;
+}
+
+.login-info {
+    background: #f9fafb;
+    padding: 16px 20px;
+    border-radius: 8px;
+    text-align: left;
+    font-size: 0.85em;
+}
+
+.login-info h3 {
+    margin-bottom: 8px;
+    font-size: 0.95em;
+}
+
+.login-info ul {
+    padding-left: 18px;
+}
+
+.login-info li {
+    margin-bottom: 4px;
+    color: #4b5563;
+}
+
+/* ---- Data Tables ---- */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+}
+
+.data-table th, .data-table td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 0.9em;
+}
+
+.data-table th {
+    background: #f9fafb;
+    font-weight: 600;
+    color: #374151;
+    position: sticky;
+    top: 0;
+}
+
+.data-table tr:hover {
+    background: #f9fafb;
+}
+
+.disagreement-row {
+    background: #fef2f2 !important;
+}
+
+/* ---- Admin Pages ---- */
+.admin-page {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
+
+.admin-page h1 {
+    margin-bottom: 8px;
+}
+
+.admin-page h2 {
+    margin: 30px 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.admin-page h3 {
+    margin-bottom: 12px;
+}
+
+.admin-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 16px 0;
+}
+
+.reviewer-progress-list {
+    display: grid;
+    gap: 16px;
+}
+
+.reviewer-progress-item {
+    background: #f9fafb;
+    padding: 16px;
+    border-radius: 8px;
+}
+
+.reviewer-progress-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+/* ---- Empty State ---- */
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #9ca3af;
+    font-size: 1.05em;
+}
+
+/* ---- Card ---- */
+.card {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+    .main-container {
+        padding: 16px 12px;
+    }
+    .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .report-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    .report-card-body h3 {
+        max-width: 100%;
+    }
+}

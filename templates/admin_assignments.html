@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}分配管理 - 管理后台{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <h1>📋 分配管理</h1>
+    <p>管理审稿人与报告的评估分配方案。建议使用 33% 重叠率：每位审稿人评 40 篇，每对审稿人之间共享 10 篇。</p>
+
+    <div class="admin-actions" style="margin: 20px 0;">
+        <form method="POST" action="{{ url_for('admin_generate_assignments') }}" style="display:inline;" onsubmit="return confirm('确认要重新生成分配方案吗？这将清除已有的分配记录。')">
+            <button type="submit" class="btn btn-primary">🔄 生成分配方案（5人·33%重叠）</button>
+        </form>
+        <span style="color: #6b7280; margin-left: 15px;">
+            随机种子: 42（可复现）
+        </span>
+    </div>
+
+    {% if assignment_summary %}
+    <h2>当前分配摘要</h2>
+    <pre style="background: #f3f4f6; padding: 20px; border-radius: 8px; line-height: 1.8;">{{ assignment_summary }}</pre>
+    {% endif %}
+
+    {% if assignments %}
+    <h2>详细分配列表 <span class="badge">{{ assignments|length }} 条</span></h2>
+
+    <!-- 按审稿人分组显示 -->
+    {% set reviewers_dict = {} %}
+    {% for a in assignments %}
+        {% if a.reviewer_name not in reviewers_dict %}
+            {% set _ = reviewers_dict.update({a.reviewer_name: []}) %}
+        {% endif %}
+        {% set _ = reviewers_dict[a.reviewer_name].append(a) %}
+    {% endfor %}
+
+    {% for rname, rassignments in reviewers_dict.items() %}
+    <div class="reviewer-section" style="margin-bottom: 30px;">
+        <h3>👤 {{ rname }} <span class="badge">{{ rassignments|length }} 篇</span></h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>报告 ID</th>
+                    <th>研究主题</th>
+                    <th>状态</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in rassignments %}
+                <tr>
+                    <td>#{{ a.report_id }}</td>
+                    <td><a href="{{ url_for('view_report', report_id=a.report_id) }}">{{ a.research_topic }}</a></td>
+                    <td>
+                        {% if a.status == 'completed' %}
+                        <span class="status-tag completed-tag">✅ 已完成</span>
+                        {% else %}
+                        <span class="status-tag pending-tag">⏳ 待评估</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="empty-state" style="margin-top: 40px;">
+        <p>📭 还没有生成分配方案</p>
+        <p>点击上面的按钮生成分配方案</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

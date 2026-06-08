@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}审稿人管理 - 管理后台{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <h1>👥 审稿人管理</h1>
+
+    <!-- 添加审稿人 -->
+    <div class="card" style="margin-bottom: 30px;">
+        <h3>➕ 添加审稿人</h3>
+        <form method="POST" style="display: flex; gap: 12px; align-items: flex-end;">
+            <div style="flex:1;">
+                <label for="reviewer_name" style="font-weight:600; display:block; margin-bottom:6px;">姓名</label>
+                <input type="text" name="reviewer_name" id="reviewer_name" required
+                       style="width:100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 1em;"
+                       placeholder="输入审稿人姓名">
+            </div>
+            <button type="submit" class="btn btn-primary">添加</button>
+        </form>
+    </div>
+
+    <!-- 审稿人列表 -->
+    <h2>当前审稿人列表 <span class="badge">{{ reviewers|length }}</span></h2>
+    {% if reviewers %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>姓名</th>
+                <th>创建时间</th>
+                <th>分配数</th>
+                <th>已完成</th>
+                <th>进度</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in reviewers %}
+            <tr>
+                <td>{{ r.id }}</td>
+                <td><strong>{{ r.name }}</strong></td>
+                <td>{{ r.created_at }}</td>
+                <td>{{ r.assignment_count }}</td>
+                <td>{{ r.completed_count }}</td>
+                <td>
+                    <div class="progress-bar small" style="width: 120px;">
+                        <div class="progress-fill" style="width: {{ r.completion_rate }}%"></div>
+                    </div>
+                    <span style="font-size:0.8em; color:#6b7280; margin-left:8px;">{{ r.completion_rate }}%</span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">📭 还没有添加审稿人</div>
+    {% endif %}
+</div>
+{% endblock %}

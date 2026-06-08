@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}我的工作台 - {{ session.reviewer_name }}{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="dashboard-header">
+        <h1>👋 欢迎, {{ session.reviewer_name }}</h1>
+        <p>你的评估任务进度</p>
+    </div>
+
+    <!-- 进度条 -->
+    <div class="progress-section">
+        <div class="progress-info">
+            <span>已完成: {{ progress.completed }} / {{ progress.total }}</span>
+            <span>{{ progress.completion_rate }}%</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ progress.completion_rate }}%"></div>
+        </div>
+    </div>
+
+    <!-- 统计卡片 -->
+    <div class="stats-row">
+        <div class="stats-card">
+            <div class="stats-number pending">{{ progress.pending }}</div>
+            <div class="stats-desc">待评估</div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-number completed-num">{{ progress.completed }}</div>
+            <div class="stats-desc">已完成</div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-number">{{ progress.total }}</div>
+            <div class="stats-desc">总分配</div>
+        </div>
+    </div>
+
+    <!-- 搜索框 -->
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="🔍 搜索报告主题..." oninput="filterReports()">
+    </div>
+
+    <!-- 待评报告列表 -->
+    <div class="report-section">
+        <h2>📝 待评报告 <span class="badge pending-badge">{{ pending_assignments|length }}</span></h2>
+        {% if pending_assignments %}
+        <div class="report-list" id="pendingList">
+            {% for a in pending_assignments %}
+            <div class="report-card pending-card" data-topic="{{ a.research_topic|lower }}">
+                <div class="report-card-header">
+                    <span class="report-id">#{{ a.report_id }}</span>
+                    <span class="report-date">{{ a.generated_date }}</span>
+                </div>
+                <div class="report-card-body">
+                    <h3><a href="{{ url_for('view_report', report_id=a.report_id) }}">{{ a.research_topic }}</a></h3>
+                </div>
+                <div class="report-card-footer">
+                    <span class="status-tag pending-tag">⏳ 待评估</span>
+                    <a href="{{ url_for('view_report', report_id=a.report_id) }}" class="btn btn-sm btn-primary">开始评估 →</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">🎉 所有报告已评估完毕！</div>
+        {% endif %}
+    </div>
+
+    <!-- 已评报告列表 -->
+    <div class="report-section">
+        <h2>✅ 已评报告 <span class="badge completed-badge">{{ completed_assignments|length }}</span></h2>
+        {% if completed_assignments %}
+        <div class="report-list" id="completedList">
+            {% for a in completed_assignments %}
+            <div class="report-card completed-card" data-topic="{{ a.research_topic|lower }}">
+                <div class="report-card-header">
+                    <span class="report-id">#{{ a.report_id }}</span>
+                    <span class="report-date">{{ a.generated_date }}</span>
+                </div>
+                <div class="report-card-body">
+                    <h3><a href="{{ url_for('view_report', report_id=a.report_id) }}">{{ a.research_topic }}</a></h3>
+                </div>
+                <div class="report-card-footer">
+                    <span class="status-tag completed-tag">✅ 已完成</span>
+                    <a href="{{ url_for('view_report', report_id=a.report_id) }}" class="btn btn-sm btn-outline">查看/修改</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">📋 还没有完成任何评估</div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function filterReports() {
+    const query = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('.report-card').forEach(card => {
+        const topic = card.dataset.topic;
+        card.style.display = topic.includes(query) ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}

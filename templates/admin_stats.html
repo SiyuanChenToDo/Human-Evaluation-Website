@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% block title %}统计分析 - 管理后台{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <h1>📊 统计分析</h1>
+
+    {% if not stats or stats.total_scores == 0 %}
+    <div class="empty-state">
+        <p>📭 还没有评分数据</p>
+        <p>等待审稿人提交评分后，此处将显示统计结果。</p>
+    </div>
+    {% else %}
+    <!-- 数据概览 -->
+    <div class="stats-row">
+        <div class="stats-card">
+            <div class="stats-number">{{ stats.total_scores }}</div>
+            <div class="stats-desc">总评分数</div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-number">{{ stats.unique_reports_scored }}</div>
+            <div class="stats-desc">已评报告数</div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-number">{{ stats.unique_reviewers }}</div>
+            <div class="stats-desc">参与审稿人数</div>
+        </div>
+    </div>
+
+    <!-- ICC -->
+    <h2>📏 评估者间信度 (ICC)</h2>
+    <p style="color: #6b7280;">ICC(2,1): 双向随机效应模型，单次测量。值 >0.75 表示良好信度，>0.90 表示优秀信度。</p>
+    {% if stats.icc %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>维度</th>
+                <th>ICC</th>
+                <th>评定</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dim, val in stats.icc.items() %}
+            <tr>
+                <td><strong>{{ dim|upper }}</strong></td>
+                <td>{{ val if val is not none else '数据不足' }}</td>
+                <td>
+                    {% if val is not none %}
+                        {% if val > 0.9 %}🟢 优秀
+                        {% elif val > 0.75 %}🟡 良好
+                        {% elif val > 0.5 %}🟠 一般
+                        {% else %}🔴 较差
+                        {% endif %}
+                    {% else %}
+                        ⚪ 数据不足
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: #9ca3af;">ICC 数据不足（需要更多重叠评分的报告）</p>
+    {% endif %}
+
+    <!-- Krippendorff's Alpha -->
+    <h2>📏 Krippendorff's Alpha</h2>
+    <p style="color: #6b7280;">适用于任意数量的评估者。值 ≥0.80 表示良好信度，≥0.667 可接受。</p>
+    {% if stats.krippendorff_alpha %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>维度</th>
+                <th>Alpha</th>
+                <th>评定</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dim, val in stats.krippendorff_alpha.items() %}
+            <tr>
+                <td><strong>{{ dim|upper }}</strong></td>
+                <td>{{ val if val is not none else '数据不足' }}</td>
+                <td>
+                    {% if val is not none %}
+                        {% if val >= 0.8 %}🟢 良好
+                        {% elif val >= 0.667 %}🟡 可接受
+                        {% else %}🔴 需改进
+                        {% endif %}
+                    {% else %}
+                        ⚪ 数据不足
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: #9ca3af;">Krippendorff's Alpha 数据不足</p>
+    {% endif %}
+
+    <!-- 分差标记 -->
+    <h2>⚠️ 评分分歧标记（分差 > 3）</h2>
+    <p style="color: #6b7280;">以下报告在某维度上存在较大评分分歧，可能需要第三方仲裁或讨论修正。</p>
+    {% if stats.disagreements %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>报告 ID</th>
+                <th>维度</th>
+                <th>分差</th>
+                <th>审稿人评分</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for d in stats.disagreements %}
+            <tr class="disagreement-row">
+                <td><a href="{{ url_for('view_report', report_id=d.report_id) }}">#{{ d.report_id }}</a></td>
+                <td><strong>{{ d.dimension|upper }}</strong></td>
+                <td><span style="color: #dc2626; font-weight: 700;">{{ d.diff }}</span></td>
+                <td>
+                    {% for rs in d.reviewer_scores %}
+                    R{{ rs.reviewer_id }}: {{ rs.score }}
+                    {% if not loop.last %} | {% endif %}
+                    {% endfor %}
+                </td>
+                <td><a href="{{ url_for('view_report', report_id=d.report_id) }}" class="btn btn-sm btn-outline">查看报告</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <p>✅ 没有发现严重分歧的报告</p>
+    </div>
+    {% endif %}
+
+    <!-- 分数分布 -->
+    <h2>📊 各维度分数分布</h2>
+    {% if stats.distribution %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+        {% for dim, dist in stats.distribution.items() %}
+        <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb;">
+            <h4 style="margin-bottom: 15px;">{{ dim|upper }}</h4>
+            <div style="display: flex; align-items: flex-end; gap: 4px; height: 120px;">
+                {% for score in range(11) %}
+                {% set count = dist.get(score, 0) %}
+                {% set max_count = dist.values()|max if dist.values() else 1 %}
+                {% set height_pct = (count / max_count * 100) if max_count > 0 else 0 %}
+                <div style="flex:1; display:flex; flex-direction:column; align-items:center; height:100%; justify-content:flex-end;">
+                    <span style="font-size:0.7em; color:#6b7280; margin-bottom:2px;">{{ count }}</span>
+                    <div style="width:100%; height:{{ height_pct }}%; background: #4f46e5; border-radius: 3px 3px 0 0; min-height: 2px;"></div>
+                    <span style="font-size:0.65em; color:#9ca3af; margin-top:4px;">{{ score }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- 均分表 -->
+    <h2>📋 报告均分表</h2>
+    <p style="color: #6b7280;">仅显示被多人评分的报告（用于信度检验）</p>
+    {% set multi_rater = stats.mean_scores|selectattr('reviewer_count', 'gt', 1)|list %}
+    {% if multi_rater %}
+    <div style="overflow-x: auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>报告 ID</th>
+                    <th>评人数</th>
+                    <th>Nov</th>
+                    <th>Sig</th>
+                    <th>Eff</th>
+                    <th>Cla</th>
+                    <th>Fea</th>
+                    <th>综合</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in multi_rater %}
+                <tr>
+                    <td><a href="{{ url_for('view_report', report_id=row.report_id) }}">#{{ row.report_id }}</a></td>
+                    <td>{{ row.reviewer_count }}</td>
+                    <td>{{ row.nov_mean }}</td>
+                    <td>{{ row.sig_mean }}</td>
+                    <td>{{ row.eff_mean }}</td>
+                    <td>{{ row.cla_mean }}</td>
+                    <td>{{ row.fea_mean }}</td>
+                    <td><strong>{{ row.overall_mean }}</strong></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="color: #9ca3af;">还没有多人评分的报告</p>
+    {% endif %}
+
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+# Database files (contains actual evaluation data)
+eval.db
+
+# Python cache
+__pycache__/
+*.pyc
+__pycache__
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Ngrok
+ngrok*
+/tmp/
+
+# Logs
+*.log

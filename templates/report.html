@@ -1,0 +1,482 @@
+{% extends "base.html" %}
+{% block title %}{{ report.research_topic }} - 报告评估{% endblock %}
+
+{% block head %}
+<style>
+    /* 评分区域悬浮样式 */
+    .score-section {
+        background: #f8f9ff;
+        border: 2px solid #4f46e5;
+        border-radius: 12px;
+        padding: 30px;
+        margin-top: 40px;
+    }
+    .score-section h2 {
+        margin-bottom: 10px;
+        color: #4f46e5;
+    }
+    .dimension-item {
+        margin-bottom: 25px;
+        padding: 15px;
+        background: white;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+    }
+    .dim-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 8px;
+    }
+    .dim-name {
+        font-weight: 600;
+        font-size: 1.1em;
+    }
+    .dim-desc {
+        font-size: 0.85em;
+        color: #6b7280;
+    }
+    .dim-score-display {
+        font-size: 2em;
+        font-weight: 700;
+        color: #4f46e5;
+        min-width: 50px;
+        text-align: center;
+    }
+    .slider-container {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    .slider-container input[type="range"] {
+        flex: 1;
+        height: 8px;
+        -webkit-appearance: none;
+        appearance: none;
+        background: #e5e7eb;
+        border-radius: 4px;
+        outline: none;
+    }
+    .slider-container input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #4f46e5;
+        cursor: pointer;
+    }
+    .score-anchors {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.75em;
+        color: #9ca3af;
+        margin-top: 4px;
+    }
+    .tooltip-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #e5e7eb;
+        font-size: 12px;
+        cursor: help;
+        margin-left: 8px;
+    }
+    .tooltip-content {
+        display: none;
+        position: absolute;
+        background: #1f2937;
+        color: white;
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 0.8em;
+        max-width: 350px;
+        z-index: 100;
+        line-height: 1.5;
+    }
+    .tooltip-icon:hover + .tooltip-content {
+        display: block;
+    }
+    .familiarity-select {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .familiarity-select label {
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    .familiarity-select select {
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid #d1d5db;
+        font-size: 1em;
+    }
+    .notes-area {
+        width: 100%;
+        min-height: 100px;
+        padding: 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 0.95em;
+        resize: vertical;
+        font-family: inherit;
+    }
+    .action-buttons {
+        display: flex;
+        gap: 12px;
+        margin-top: 25px;
+        justify-content: flex-end;
+    }
+    .save-status {
+        color: #059669;
+        font-weight: 600;
+        margin-left: 15px;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    .save-status.visible {
+        opacity: 1;
+    }
+    .report-content {
+        background: white;
+        padding: 30px 40px;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        line-height: 1.7;
+        font-size: 0.95em;
+    }
+    .report-content h1 { font-size: 1.6em; margin-top: 1.5em; }
+    .report-content h2 { font-size: 1.3em; margin-top: 1.5em; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.4em; }
+    .report-content h3 { font-size: 1.1em; margin-top: 1.2em; }
+    .report-content p { margin: 0.8em 0; }
+    .report-content blockquote {
+        border-left: 4px solid #4f46e5;
+        padding: 10px 20px;
+        margin: 15px 0;
+        background: #f8f9ff;
+        border-radius: 0 8px 8px 0;
+    }
+    .report-content ul, .report-content ol { padding-left: 1.5em; }
+    .report-content code {
+        background: #f3f4f6;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.9em;
+    }
+    .report-content pre {
+        background: #1f2937;
+        color: #e5e7eb;
+        padding: 16px;
+        border-radius: 8px;
+        overflow-x: auto;
+    }
+    .report-content pre code {
+        background: none;
+        color: inherit;
+    }
+    .jump-to-score {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: #4f46e5;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+        z-index: 50;
+        transition: transform 0.2s;
+    }
+    .jump-to-score:hover {
+        transform: scale(1.05);
+    }
+    .score-anchors-detail {
+        margin-top: 6px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+    .anchor-item {
+        font-size: 0.7em;
+        color: #6b7280;
+        background: #f3f4f6;
+        padding: 2px 7px;
+        border-radius: 4px;
+        white-space: nowrap;
+    }
+    .anchor-item b {
+        color: #4f46e5;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="report-view">
+    <!-- 报告元信息 -->
+    <div class="report-meta">
+        <span class="meta-tag">📅 {{ report.generated_date }}</span>
+        <span class="meta-tag">📄 报告 #{{ report.id }}</span>
+    </div>
+
+    <!-- 报告内容 -->
+    <div class="report-content" id="reportContent">
+        {{ content_html|safe }}
+    </div>
+
+    <!-- 跳转到评分 -->
+    <a href="#scoreSection" class="jump-to-score">📝 去评分 ↓</a>
+
+    <!-- 评分区域 -->
+    <div class="score-section" id="scoreSection">
+        <h2>📊 评估打分</h2>
+
+        <!-- 评分速查面板 -->
+        <details style="margin-bottom: 25px; background: #f0f4ff; padding: 16px 20px; border-radius: 10px; border: 1px solid #c7d2fe; cursor: pointer;">
+            <summary style="font-weight: 700; color: #3730a3; font-size: 1em; user-select: none;">📋 评分速查（点击展开/收起）</summary>
+            <div style="margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 0.8em; line-height: 1.7;">
+                <div><strong>🔬 新颖性 Nov</strong><br>0-2 完全重复 · 3-4 微小改动 · 5-6 适度改进 · 7-8 明确创新 · 9-10 突破性</div>
+                <div><strong>💡 重要性 Sig</strong><br>0-2 无影响 · 3-4 极其有限 · 5-6 中等推动 · 7-8 重要问题 · 9-10 跨领域影响</div>
+                <div><strong>🔍 严谨性 Eff</strong><br>0-2 逻辑断裂 · 3-4 明显漏洞 · 5-6 基本通顺 · 7-8 逻辑严谨 · 9-10 无懈可击</div>
+                <div><strong>📖 清晰度 Cla</strong><br>0-2 严重混乱 · 3-4 表达模糊 · 5-6 基本可读 · 7-8 清晰流畅 · 9-10 精炼优雅</div>
+                <div><strong>⚙️ 可行性 Fea</strong><br>0-2 不可检验 · 3-4 路径模糊 · 5-6 基本可检验 · 7-8 方案务实 · 9-10 可直接执行</div>
+            </div>
+            <div style="margin-top: 10px; font-size: 0.85em;">
+                <a href="/rubric" target="_blank" style="color: #4f46e5;">📄 查看完整评估细则 →</a>
+            </div>
+        </details>
+
+        {% if existing_score %}
+        <div class="flash flash-info" style="margin-bottom: 20px;">
+            你已于 {{ existing_score.updated_at or existing_score.created_at }} 提交过评分。你可以修改后重新提交。
+        </div>
+        {% endif %}
+
+        <!-- 维度 1: 新颖性 -->
+        <div class="dimension-item">
+            <div class="dim-header">
+                <div>
+                    <span class="dim-name">🔬 新颖性 (Novelty)</span>
+                    <span class="dim-desc">· 假设的原创性和概念创新程度</span>
+                    <span class="tooltip-icon">?</span>
+                    <span class="tooltip-content">
+                        <strong>0-2:</strong> 完全重复已有研究<br>
+                        <strong>3-4:</strong> 仅微小改动<br>
+                        <strong>5-6:</strong> 适度改进或常规组合<br>
+                        <strong>7-8:</strong> 明确的创新点<br>
+                        <strong>9-10:</strong> 突破性的新概念/新范式
+                    </span>
+                </div>
+                <span class="dim-score-display" id="novDisplay">{{ existing_score.nov if existing_score else 5 }}</span>
+            </div>
+            <div class="slider-container">
+                <span>0</span>
+                <input type="range" min="0" max="10" value="{{ existing_score.nov if existing_score else 5 }}" step="1" id="novSlider" oninput="updateDisplay('nov')">
+                <span>10</span>
+            </div>
+            <div class="score-anchors-detail">
+                <span class="anchor-item"><b>0-2</b> 完全重复已有研究</span>
+                <span class="anchor-item"><b>3-4</b> 仅微小改动</span>
+                <span class="anchor-item"><b>5-6</b> 适度改进或常规组合</span>
+                <span class="anchor-item"><b>7-8</b> 明确创新点</span>
+                <span class="anchor-item"><b>9-10</b> 突破性新概念/新范式</span>
+            </div>
+        </div>
+
+        <!-- 维度 2: 重要性 -->
+        <div class="dimension-item">
+            <div class="dim-header">
+                <div>
+                    <span class="dim-name">💡 重要性 (Significance)</span>
+                    <span class="dim-desc">· 假设被证实后的学术/实践影响力</span>
+                    <span class="tooltip-icon">?</span>
+                    <span class="tooltip-content">
+                        <strong>0-2:</strong> 几乎无影响<br>
+                        <strong>3-4:</strong> 影响范围极其有限<br>
+                        <strong>5-6:</strong> 对子领域有中等推动作用<br>
+                        <strong>7-8:</strong> 解决公认的重要开放问题<br>
+                        <strong>9-10:</strong> 跨领域影响，改变行业实践
+                    </span>
+                </div>
+                <span class="dim-score-display" id="sigDisplay">{{ existing_score.sig if existing_score else 5 }}</span>
+            </div>
+            <div class="slider-container">
+                <span>0</span>
+                <input type="range" min="0" max="10" value="{{ existing_score.sig if existing_score else 5 }}" step="1" id="sigSlider" oninput="updateDisplay('sig')">
+                <span>10</span>
+            </div>
+            <div class="score-anchors-detail">
+                <span class="anchor-item"><b>0-2</b> 几乎无影响</span>
+                <span class="anchor-item"><b>3-4</b> 影响范围极其有限</span>
+                <span class="anchor-item"><b>5-6</b> 对子领域有中等推动</span>
+                <span class="anchor-item"><b>7-8</b> 解决公认的重要问题</span>
+                <span class="anchor-item"><b>9-10</b> 跨领域影响，改变行业实践</span>
+            </div>
+        </div>
+
+        <!-- 维度 3: 科学严谨性 -->
+        <div class="dimension-item">
+            <div class="dim-header">
+                <div>
+                    <span class="dim-name">🔍 科学严谨性 (Scientific Rigor)</span>
+                    <span class="dim-desc">· 逻辑推理链的严密性、理论根基、方法论合理性</span>
+                    <span class="tooltip-icon">?</span>
+                    <span class="tooltip-content">
+                        <strong>0-2:</strong> 逻辑根本性断裂<br>
+                        <strong>3-4:</strong> 逻辑链有明显漏洞<br>
+                        <strong>5-6:</strong> 基本通顺但不够严密<br>
+                        <strong>7-8:</strong> 逻辑严谨，理论扎实<br>
+                        <strong>9-10:</strong> 近乎无懈可击
+                    </span>
+                </div>
+                <span class="dim-score-display" id="effDisplay">{{ existing_score.eff if existing_score else 5 }}</span>
+            </div>
+            <div class="slider-container">
+                <span>0</span>
+                <input type="range" min="0" max="10" value="{{ existing_score.eff if existing_score else 5 }}" step="1" id="effSlider" oninput="updateDisplay('eff')">
+                <span>10</span>
+            </div>
+            <div class="score-anchors-detail">
+                <span class="anchor-item"><b>0-2</b> 逻辑根本性断裂</span>
+                <span class="anchor-item"><b>3-4</b> 逻辑链有明显漏洞</span>
+                <span class="anchor-item"><b>5-6</b> 基本通顺但不够严密</span>
+                <span class="anchor-item"><b>7-8</b> 逻辑严谨，理论扎实</span>
+                <span class="anchor-item"><b>9-10</b> 近乎无懈可击</span>
+            </div>
+        </div>
+
+        <!-- 维度 4: 清晰度 -->
+        <div class="dimension-item">
+            <div class="dim-header">
+                <div>
+                    <span class="dim-name">📖 清晰度与结构 (Clarity)</span>
+                    <span class="dim-desc">· 文字表达、组织结构、信息呈现的清晰程度</span>
+                    <span class="tooltip-icon">?</span>
+                    <span class="tooltip-content">
+                        <strong>0-2:</strong> 文字严重混乱<br>
+                        <strong>3-4:</strong> 多处表达模糊<br>
+                        <strong>5-6:</strong> 基本可读，有改进空间<br>
+                        <strong>7-8:</strong> 表达清晰流畅<br>
+                        <strong>9-10:</strong> 文笔精炼优雅
+                    </span>
+                </div>
+                <span class="dim-score-display" id="claDisplay">{{ existing_score.cla if existing_score else 5 }}</span>
+            </div>
+            <div class="slider-container">
+                <span>0</span>
+                <input type="range" min="0" max="10" value="{{ existing_score.cla if existing_score else 5 }}" step="1" id="claSlider" oninput="updateDisplay('cla')">
+                <span>10</span>
+            </div>
+            <div class="score-anchors-detail">
+                <span class="anchor-item"><b>0-2</b> 文字严重混乱</span>
+                <span class="anchor-item"><b>3-4</b> 多处表达模糊</span>
+                <span class="anchor-item"><b>5-6</b> 基本可读，有改进空间</span>
+                <span class="anchor-item"><b>7-8</b> 表达清晰流畅</span>
+                <span class="anchor-item"><b>9-10</b> 文笔精炼优雅</span>
+            </div>
+        </div>
+
+        <!-- 维度 5: 可行性 -->
+        <div class="dimension-item">
+            <div class="dim-header">
+                <div>
+                    <span class="dim-name">⚙️ 可行性与可检验性 (Feasibility)</span>
+                    <span class="dim-desc">· 假设是否可被实验证实/反驳，实验方案是否切实可行</span>
+                    <span class="tooltip-icon">?</span>
+                    <span class="tooltip-content">
+                        <strong>0-2:</strong> 本质上不可检验<br>
+                        <strong>3-4:</strong> 检验路径极其模糊<br>
+                        <strong>5-6:</strong> 基本可检验，有实施困难<br>
+                        <strong>7-8:</strong> 预测明确，方案务实<br>
+                        <strong>9-10:</strong> 可直接作为实施手册执行
+                    </span>
+                </div>
+                <span class="dim-score-display" id="feaDisplay">{{ existing_score.fea if existing_score else 5 }}</span>
+            </div>
+            <div class="slider-container">
+                <span>0</span>
+                <input type="range" min="0" max="10" value="{{ existing_score.fea if existing_score else 5 }}" step="1" id="feaSlider" oninput="updateDisplay('fea')">
+                <span>10</span>
+            </div>
+            <div class="score-anchors-detail">
+                <span class="anchor-item"><b>0-2</b> 本质上不可检验</span>
+                <span class="anchor-item"><b>3-4</b> 检验路径极其模糊</span>
+                <span class="anchor-item"><b>5-6</b> 基本可检验，有实施困难</span>
+                <span class="anchor-item"><b>7-8</b> 预测明确，方案务实</span>
+                <span class="anchor-item"><b>9-10</b> 可直接作为实施手册执行</span>
+            </div>
+        </div>
+
+        <!-- 领域熟悉度 -->
+        <div class="familiarity-select">
+            <label for="familiarity">📚 你对本报告领域的熟悉程度：</label>
+            <select id="familiarity">
+                <option value="1" {% if existing_score and existing_score.domain_familiarity == 1 %}selected{% endif %}>1 - 非常不熟悉</option>
+                <option value="2" {% if existing_score and existing_score.domain_familiarity == 2 %}selected{% endif %}>2 - 不太熟悉</option>
+                <option value="3" {% if existing_score and existing_score.domain_familiarity == 3 %}selected{% endif %}>3 - 一般熟悉</option>
+                <option value="4" {% if existing_score and existing_score.domain_familiarity == 4 %}selected{% endif %}>4 - 比较熟悉</option>
+                <option value="5" {% if existing_score and existing_score.domain_familiarity == 5 %}selected{% endif %}>5 - 非常熟悉</option>
+            </select>
+        </div>
+
+        <!-- 备注 -->
+        <div style="margin-bottom: 20px;">
+            <label for="notes" style="font-weight: 600; display: block; margin-bottom: 8px;">📝 备注（可选）：</label>
+            <textarea id="notes" class="notes-area" placeholder="记录你的评估理由、疑问或其他意见...">{{ existing_score.notes if existing_score else '' }}</textarea>
+        </div>
+
+        <!-- 按钮 -->
+        <div class="action-buttons">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline">返回工作台</a>
+            <button class="btn btn-primary" onclick="submitScore()">💾 提交评分</button>
+            <span class="save-status" id="saveStatus">✅ 已保存</span>
+        </div>
+    </div>
+</div>
+
+<script>
+const reportId = {{ report.id }};
+
+function updateDisplay(dim) {
+    const slider = document.getElementById(dim + 'Slider');
+    const display = document.getElementById(dim + 'Display');
+    display.textContent = slider.value;
+}
+
+function submitScore() {
+    const data = {
+        nov: parseInt(document.getElementById('novSlider').value),
+        sig: parseInt(document.getElementById('sigSlider').value),
+        eff: parseInt(document.getElementById('effSlider').value),
+        cla: parseInt(document.getElementById('claSlider').value),
+        fea: parseInt(document.getElementById('feaSlider').value),
+        domain_familiarity: parseInt(document.getElementById('familiarity').value),
+        notes: document.getElementById('notes').value
+    };
+
+    fetch(`/report/${reportId}/score`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(result => {
+        if (result.success) {
+            const status = document.getElementById('saveStatus');
+            status.classList.add('visible');
+            setTimeout(() => status.classList.remove('visible'), 3000);
+        } else {
+            alert('保存失败: ' + (result.error || '未知错误'));
+        }
+    })
+    .catch(err => {
+        alert('网络错误: ' + err.message);
+    });
+}
+</script>
+{% endblock %}
