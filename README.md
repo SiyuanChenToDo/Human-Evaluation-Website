@@ -16,7 +16,8 @@ python app.py --port 5000
 
 # 4. Open browser
 # Reviewers: http://localhost:5000/login
-# Admin:     http://localhost:5000/admin-login  (password: admin2025)
+# Admin:     http://localhost:5000/admin-login
+#            set ADMIN_PASSWORD env var to change password (default: admin)
 ```
 
 ## Features

@@ -16,7 +16,7 @@ from datetime import datetime
 
 # ---- 应用初始化 ----
 app = Flask(__name__)
-app.secret_key = 'scientific-hypothesis-eval-2025-secret-key-change-in-production'
+app.secret_key = 'change-this-to-a-random-secret-key'
 
 # 路径配置
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -161,7 +161,9 @@ def login():
 def admin_login():
     if request.method == 'POST':
         password = request.form.get('password', '')
-        if password == 'admin2025':  # 简易密码，本地使用
+        import os as _os
+        admin_pw = _os.environ.get('ADMIN_PASSWORD', 'admin')
+        if password == admin_pw:
             session['reviewer_id'] = 'admin'
             session['reviewer_name'] = '管理员'
             flash('已进入管理后台', 'success')
@@ -423,6 +425,6 @@ if __name__ == '__main__':
         print("=" * 50)
         print("  Scientific Hypothesis Evaluation System")
         print(f"  URL: http://{args.host}:{args.port}")
-        print(f"  Admin password: admin2025")
+        print(f"  Set admin password via: set ADMIN_PASSWORD=yourpassword")
         print("=" * 50)
         app.run(host=args.host, port=args.port, debug=True)
