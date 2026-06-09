@@ -89,6 +89,19 @@ def render_markdown(content):
         r'&#36;\1', html
     )
 
+    # 6. 将生僻 Unicode 下标/上标转为 HTML <sub>/<sup>，避免显示为方框
+    subs = [('ⱼ','j'),('ₖ','k'),('ᵢ','i'),
+            ('ₗ','l'),('ₕ','h'),('ₘ','m'),
+            ('ₙ','n'),('ₒ','o')]
+    for uch, letter in subs:
+        if uch in html:
+            html = html.replace(uch, f'<sub>{letter}</sub>')
+    # 兼容已有 <sup> 的 ²³¹
+    sups = [('²','2'),('³','3'),('¹','1')]
+    for uch, digit in sups:
+        if uch in html:
+            html = html.replace(uch, f'<sup>{digit}</sup>')
+
     return html
 
 
