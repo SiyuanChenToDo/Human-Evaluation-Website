@@ -45,6 +45,29 @@ def render_markdown(content):
     import re
 
     # ---- 预处理：修复 markdown 格式问题 ----
+    # 修复表格行内 | 被误当列分隔符（如 |V| → 转义为 \|V\|）
+    def escape_table_pipes(content):
+        lines = content.split('\n')
+        in_table = False
+        result = []
+        for i, line in enumerate(lines):
+            stripped = line.strip()
+            if stripped.startswith('|') and '---' in stripped:
+                in_table = True
+                result.append(line)
+            elif in_table and stripped.startswith('|'):
+                # Table row: escape | between word chars (like |V| → \|V\|)
+                # 转义表格内的绝对值记号 |word| → \|word\|（避免被当作列分隔符）
+                escaped = re.sub(r'\|(\w+)\|', r'\\|\1\\|', line)
+                result.append(escaped)
+            elif in_table and not stripped.startswith('|'):
+                in_table = False
+                result.append(line)
+            else:
+                result.append(line)
+        return '\n'.join(result)
+    content = escape_table_pipes(content)
+    # 修复表格前缺空行
     content = re.sub(r'([^\n|])\n(\|.*?\n\|[-| ]+\n)', r'\1\n\n\2', content)
 
     # ---- 保护所有 LaTeX 公式（用占位符替换，避免 markdown 破坏） ----
