@@ -1,0 +1,14 @@
+Framework Architecture
+We extend AART's unified architecture (`10.18653/v1/2024.naacl-long.407`) with three novel regularization components:
+
+**1. Bayesian Stability-Prior Embeddings (BSPE)**
+- Compute per-annotator stability using consensus-based metric: s_{j} = (1/|S_{j}|) ∑_{(x,y)∈S_{j}} (1/(|A_x|−1)) ∑_{k≠j, k∈A_x} 𝕀[y_{j} = y_{k}]
+- Set adaptive regularization strength: λ_{j} = λ₀ / (1 + κ·s_{j})
+- Apply L2 penalty on delta embeddings: ∑_{j} λ_{j}‖Δ_{j}‖²
+
+**2. L21 Delta Embeddings**
+- Parameterize: a_{j} = μ + Δ_{j}, where μ is global annotator prototype computed as exponential moving average (EMA) with decay=0.99
+- Apply L21 penalty: c∑_{j}‖Δ_{j}‖^{2} = c∑_{j}√(∑_{k}Δ_{j}_{k}²)
+- This encourages most Δ_{j} → 0 while allowing high-signal annotators to deviate
+
+**3. COSINE-Annotator C

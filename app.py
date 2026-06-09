@@ -66,8 +66,22 @@ def render_markdown(content):
     # 4. \(...\) (inline math)
     content = re.sub(r'\\\(.*?\\\)', save, content)
 
+    # 5. 保护公式外裸的 _{} 和 ^{}（markdown 在 Unicode 字符后会把 _ 当斜体）
+    unprotected = {}
+    def save_sub(m):
+        counter[0] += 1
+        key = f'\x00SUB{counter[0]}\x00'
+        unprotected[key] = m.group(0)
+        return key
+    content = re.sub(r'_\{(?=[^}]+\})', save_sub, content)
+    content = re.sub(r'\^\{(?=[^}]+\})', save_sub, content)
+
     # ---- Markdown 转 HTML ----
     html = md_renderer.convert(content)
+
+    # ---- 恢复 _{} / ^{} ----
+    for key, formula in unprotected.items():
+        html = html.replace(key, formula)
 
     # ---- 恢复公式 ----
     for key, formula in protected.items():
