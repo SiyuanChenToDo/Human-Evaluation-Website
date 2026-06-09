@@ -8,8 +8,8 @@
     <script>
     MathJax = {
       tex: {
-        inlineMath: [['\\(', '\\)']],
-        displayMath: [['\\[', '\\]']],
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
         processEscapes: false
       },
       options: {
@@ -17,7 +17,19 @@
       }
     };
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+    <script>
+    // Fallback: try jsdelivr first, then unpkg if blocked
+    var mathjaxScript = document.createElement('script');
+    mathjaxScript.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+    mathjaxScript.async = true;
+    mathjaxScript.onerror = function() {
+        var fallback = document.createElement('script');
+        fallback.src = 'https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js';
+        fallback.async = true;
+        document.head.appendChild(fallback);
+    };
+    document.head.appendChild(mathjaxScript);
+    </script>
     {% block head %}{% endblock %}
 </head>
 <body>

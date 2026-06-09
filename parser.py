@@ -34,25 +34,19 @@ def parse_report(filepath):
     research_topic = extract_field(lines, 'Research Topic')
     generated_date = extract_field(lines, 'Generated')
 
-    # 找到第二个 --- 分隔线（实际报告内容起点）
-    content_start = None
-    separator_count = 0
+    # 找到第一个 --- 分隔线，之后就是报告正文
+    # 所有报告的 AI 元数据都在第一个 --- 之前
+    content_start = 0
     for i, line in enumerate(lines):
-        if line.strip() == '---':
-            separator_count += 1
-            if separator_count == 2:
-                content_start = i + 1
-                break
+        if line.strip() == '---' and i > 10:  # 第一个 --- 在元数据末尾
+            content_start = i + 1
+            break
 
-    if content_start is None:
-        # 回退方案：找第一个 ## 标题行
-        for i, line in enumerate(lines):
-            if line.startswith('## ') or line.startswith('# '):
-                content_start = i
-                break
-
-    if content_start is None:
-        content_start = 0
+    # 跳过 content 开头的空行和主标题装饰线（如多余的 --- + 空行）
+    while content_start < len(lines) and (
+        lines[content_start].strip() == '' or lines[content_start].strip() == '---'
+    ):
+        content_start += 1
 
     content = ''.join(lines[content_start:])
 

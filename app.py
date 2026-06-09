@@ -59,10 +59,15 @@ def render_markdown(content):
         math_blocks[key] = match.group(0)
         return key
 
-    # 1. 保护 display math: \[ ... \]（可能跨多行）
+    # 0. 修复表格格式：确保表格行前有空行（否则 markdown 不识别为表格）
+    content = re.sub(r'([^\n|])\n(\|.*?\n\|[-| ]+\n)', r'\1\n\n\2', content)
+
+    # 1. 保护 display math: $$ ... $$（跨行）和 \[ ... \]（跨行）
+    content = re.sub(r'\$\$.*?\$\$', protect, content, flags=re.DOTALL)
     content = re.sub(r'\\\[.*?\\\]', protect, content, flags=re.DOTALL)
 
-    # 2. 保护 inline math: \( ... \)
+    # 2. 保护 inline math: $ ... $ 和 \( ... \)
+    content = re.sub(r'(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$)', protect, content)
     content = re.sub(r'\\\(.*?\\\)', protect, content)
 
     # 3. markdown 转换
@@ -71,6 +76,14 @@ def render_markdown(content):
     # 4. 恢复公式
     for key, formula in math_blocks.items():
         html = html.replace(key, formula)
+
+    # 5. 转义非数学用途的 $ 符号，避免 MathJax 误将其当作 LaTeX 数学分隔符。
+    #    匹配货币/金额格式（有逗号、K/M/B后缀、/hr等），这些不可能是 LaTeX 公式。
+    #    $25,000  |  $200K  |  $4.2B  |  $15/hr  |  $15/hour  |  $3.50
+    html = re.sub(
+        r'\$(\d{1,3}(?:,\d{3})*(?:\.\d+)?(?:[KMBkmb])?(?:/[a-zA-Z]+)?)',
+        r'&#36;\1', html
+    )
 
     return html
 
