@@ -128,6 +128,14 @@ def render_markdown(content):
         if uch in html:
             html = html.replace(uch, ascii_char)
 
+    # 7. 将简单的 _{word} / ^{word} 转为 HTML <sub>/<sup>（单层，无嵌套括号）
+    #    只匹配 _{字母数字}，跳过 _{复杂表达式} 避免破坏嵌套结构
+    html = re.sub(r'_\{(?=\w+\})', '<sub>', html)
+    html = re.sub(r'\^\{(?=\w+\})', '<sup>', html)
+    # 关闭对应的标签（匹配 <sub>xxx} 或 <sup>xxx}）
+    html = re.sub(r'(<sub>\w+)\}', r'\1</sub>', html)
+    html = re.sub(r'(<sup>\w+)\}', r'\1</sup>', html)
+
     return html
 
 
