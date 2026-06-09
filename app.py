@@ -89,18 +89,44 @@ def render_markdown(content):
         r'&#36;\1', html
     )
 
-    # 6. 将生僻 Unicode 下标/上标转为 HTML <sub>/<sup>，避免显示为方框
-    subs = [('ⱼ','j'),('ₖ','k'),('ᵢ','i'),
-            ('ₗ','l'),('ₕ','h'),('ₘ','m'),
-            ('ₙ','n'),('ₒ','o')]
-    for uch, letter in subs:
+    # 6. 将所有 Unicode 下标/上标/数学字母转为标准 HTML，确保前端可读性
+    SUB_MAP = {
+        'ₐ':'a','ₑ':'e','ₒ':'o','ₓ':'x','ₔ':'schwa',
+        'ₕ':'h','ₖ':'k','ₗ':'l','ₘ':'m','ₙ':'n',
+        'ₚ':'p','ₛ':'s','ₜ':'t',
+        'ⱼ':'j','ᵢ':'i','ᵣ':'r','ᵤ':'u','ᵥ':'v',
+        # Greek subscript
+        'ᵦ':'beta','ᵧ':'gamma','ᵨ':'rho','ᵩ':'phi','ᵪ':'chi',
+    }
+    SUP_MAP = {
+        '²':'2','³':'3','¹':'1','⁰':'0',
+        'ⁱ':'i','⁴':'4','⁵':'5','⁶':'6',
+        '⁷':'7','⁸':'8','⁹':'9',
+        '⁺':'+','⁻':'-','⁼':'=','⁽':'(','⁾':')',
+        'ⁿ':'n',
+    }
+    # 生僻数学字母 -> 普通 ASCII（非 $...$ 公式内时 MathJax 无法渲染）
+    MATH_ASCII = {
+        # Double-struck
+        '\U0001D538':'A','\U0001D539':'B','\U0001D53C':'E','\U0001D53D':'F',
+        '\U0001D540':'I','\U0001D541':'J','\U0001D544':'M',
+        '\U0001D546':'O','\U0001D54A':'S','\U0001D54B':'T',
+        '\U0001D552':'a','\U0001D553':'b','\U0001D554':'c','\U0001D555':'d',
+        '\U0001D556':'e','\U0001D557':'f','\U0001D55A':'i','\U0001D55B':'j',
+        '\U0001D55D':'l','\U0001D55E':'m','\U0001D55F':'n','\U0001D560':'o',
+        '\U0001D561':'p','\U0001D563':'r','\U0001D564':'s','\U0001D565':'t',
+        # Script
+        'ℒ':'L','ℓ':'l','℘':'P',
+    }
+    for uch, letter in SUB_MAP.items():
         if uch in html:
             html = html.replace(uch, f'<sub>{letter}</sub>')
-    # 兼容已有 <sup> 的 ²³¹
-    sups = [('²','2'),('³','3'),('¹','1')]
-    for uch, digit in sups:
+    for uch, digit in SUP_MAP.items():
         if uch in html:
             html = html.replace(uch, f'<sup>{digit}</sup>')
+    for uch, ascii_char in MATH_ASCII.items():
+        if uch in html:
+            html = html.replace(uch, ascii_char)
 
     return html
 
