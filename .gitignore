@@ -1,6 +1,9 @@
 # Database files (contains actual evaluation data)
 eval.db
 
+# Deployment archive (too large, upload separately)
+reports_deploy.zip
+
 # Python cache
 __pycache__/
 *.pyc
