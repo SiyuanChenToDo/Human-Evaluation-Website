@@ -41,55 +41,46 @@ md_renderer = markdown.Markdown(extensions=['extra', 'codehilite', 'tables', 'fe
 
 
 def render_markdown(content):
-    """
-    将 markdown 内容转为 HTML，保护 LaTeX 公式不被 markdown 库破坏。
-
-    Python markdown 库会将 _ 和 * 等字符解析为强调标记，
-    破坏 LaTeX 公式。解决方式：先用占位符替换所有公式，
-    markdown 转换后再换回来。
-    """
+    """将 markdown 转为 HTML，同时保护 LaTeX 公式"""
     import re
-    import uuid
 
-    # 存储被保护的公式
-    math_blocks = {}
-
-    def protect(match):
-        key = f'MATH{uuid.uuid4().hex[:12]}'
-        math_blocks[key] = match.group(0)
-        return key
-
-    # 0. 修复表格格式：确保表格行前有空行（否则 markdown 不识别为表格）
+    # ---- 预处理：修复 markdown 格式问题 ----
     content = re.sub(r'([^\n|])\n(\|.*?\n\|[-| ]+\n)', r'\1\n\n\2', content)
 
-    # 0.5. 保护 Unicode 数学公式中的 _{} 和 ^{} 下标/上标（不被 markdown 转成 <em>）
-    content = re.sub(r'(_\{[^}]+\})', protect, content)
-    content = re.sub(r'(\^\{[^}]+\})', protect, content)
+    # ---- 保护所有 LaTeX 公式（用占位符替换，避免 markdown 破坏） ----
+    counter = [0]
+    protected = {}
 
-    # 1. 保护 display math: $$ ... $$（跨行）和 \[ ... \]（跨行）
-    content = re.sub(r'\$\$.*?\$\$', protect, content, flags=re.DOTALL)
-    content = re.sub(r'\\\[.*?\\\]', protect, content, flags=re.DOTALL)
+    def save(m):
+        counter[0] += 1
+        key = f'\x00MATH{counter[0]}\x00'
+        protected[key] = m.group(0)
+        return key
 
-    # 2. 保护 inline math: $ ... $ 和 \( ... \)
-    content = re.sub(r'(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$)', protect, content)
-    content = re.sub(r'\\\(.*?\\\)', protect, content)
+    # 1. $$...$$ (display math, multiline)
+    content = re.sub(r'\$\$.*?\$\$', save, content, flags=re.DOTALL)
+    # 2. \[...\] (display math, multiline)
+    content = re.sub(r'\\\[.*?\\\]', save, content, flags=re.DOTALL)
+    # 3. $...$ (inline math, single line)
+    content = re.sub(r'(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$)', save, content)
+    # 4. \(...\) (inline math)
+    content = re.sub(r'\\\(.*?\\\)', save, content)
 
-    # 3. markdown 转换
+    # ---- Markdown 转 HTML ----
     html = md_renderer.convert(content)
 
-    # 4. 恢复公式
-    for key, formula in math_blocks.items():
+    # ---- 恢复公式 ----
+    for key, formula in protected.items():
         html = html.replace(key, formula)
 
-    # 5. 转义非数学用途的 $ 符号，避免 MathJax 误将其当作 LaTeX 数学分隔符。
-    #    匹配货币/金额格式（有逗号、K/M/B后缀、/hr等），这些不可能是 LaTeX 公式。
-    #    $25,000  |  $200K  |  $4.2B  |  $15/hr  |  $15/hour  |  $3.50
+    # ---- 后处理 ----
+    # 转义货币 $ 符号，避免 MathJax 误处理
     html = re.sub(
         r'\$(\d{1,3}(?:,\d{3})*(?:\.\d+)?(?:[KMBkmb])?(?:/[a-zA-Z]+)?)',
         r'&#36;\1', html
     )
 
-    # 6. 将所有 Unicode 下标/上标/数学字母转为标准 HTML，确保前端可读性
+    # 将所有 Unicode 下标/上标/数学字母转为标准 HTML，确保前端可读性
     SUB_MAP = {
         'ₐ':'a','ₑ':'e','ₒ':'o','ₓ':'x','ₔ':'schwa',
         'ₕ':'h','ₖ':'k','ₗ':'l','ₘ':'m','ₙ':'n',
