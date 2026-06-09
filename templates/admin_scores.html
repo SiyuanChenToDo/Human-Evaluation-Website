@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}评分管理 - 管理后台{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <h1>📝 评分管理（可打回重评）</h1>
+    <p style="margin-bottom: 20px;">点击"打回"按钮可将审稿人的评分退回，该审稿人需重新对该报告进行评分。</p>
+
+    <div class="admin-actions">
+        <a href="{{ url_for('admin') }}" class="btn btn-outline">← 返回总览</a>
+        <a href="{{ url_for('admin_stats') }}" class="btn btn-outline">📊 统计分析</a>
+    </div>
+
+    {% if scores %}
+    <!-- 按审稿人分组 -->
+    {% set by_reviewer = {} %}
+    {% for s in scores %}
+        {% set name = s.reviewer_name %}
+        {% if name not in by_reviewer %}
+            {% set _ = by_reviewer.update({name: []}) %}
+        {% endif %}
+        {% set _ = by_reviewer[name].append(s) %}
+    {% endfor %}
+
+    {% for rname, rscores in by_reviewer.items() %}
+    <div style="margin-bottom: 30px;">
+        <h2>👤 {{ rname }} <span class="badge">{{ rscores|length }} 篇</span></h2>
+        <div style="overflow-x: auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>报告ID</th>
+                        <th>研究主题</th>
+                        <th>Nov</th>
+                        <th>Sig</th>
+                        <th>Eff</th>
+                        <th>Cla</th>
+                        <th>Fea</th>
+                        <th>均分</th>
+                        <th>备注</th>
+                        <th>评分时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in rscores %}
+                    {% set avg = (s.nov + s.sig + s.eff + s.cla + s.fea) / 5 %}
+                    <tr>
+                        <td><a href="{{ url_for('view_report', report_id=s.report_id) }}">#{{ s.report_id }}</a></td>
+                        <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ s.research_topic }}</td>
+                        <td>{{ s.nov }}</td>
+                        <td>{{ s.sig }}</td>
+                        <td>{{ s.eff }}</td>
+                        <td>{{ s.cla }}</td>
+                        <td>{{ s.fea }}</td>
+                        <td><strong>{{ '%.1f'|format(avg) }}</strong></td>
+                        <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; font-size: 0.85em; color: #6b7280;">{{ s.notes or '-' }}</td>
+                        <td style="font-size: 0.8em; color: #9ca3af;">{{ s.created_at[:16] if s.created_at else '-' }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('admin_reject', report_id=s.report_id, reviewer_id=s.reviewer_id) }}" onsubmit="return confirm('确认打回 #{{ s.report_id }} {{ rname }} 的评分吗？审稿人需重新对该报告评分。')">
+                                <button type="submit" class="btn btn-sm btn-danger">↩ 打回重评</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="empty-state">📭 还没有评分数据</div>
+    {% endif %}
+</div>
+{% endblock %}

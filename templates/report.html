@@ -236,20 +236,17 @@
     <div class="score-section" id="scoreSection">
         <h2>📊 评估打分</h2>
 
-        <!-- 评分速查面板 -->
-        <details style="margin-bottom: 25px; background: #f0f4ff; padding: 16px 20px; border-radius: 10px; border: 1px solid #c7d2fe; cursor: pointer;">
-            <summary style="font-weight: 700; color: #3730a3; font-size: 1em; user-select: none;">📋 评分速查（点击展开/收起）</summary>
-            <div style="margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 0.8em; line-height: 1.7;">
+        <!-- 评分速查面板（始终可见） -->
+        <div style="margin-bottom: 25px; background: #f0f4ff; padding: 16px 20px; border-radius: 10px; border: 1px solid #c7d2fe;">
+            <div style="font-weight: 700; color: #3730a3; font-size: 1em; margin-bottom: 10px;">📋 评分速查</div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; font-size: 0.8em; line-height: 1.7;">
                 <div><strong>🔬 新颖性 Nov</strong><br>0-2 完全重复 · 3-4 微小改动 · 5-6 适度改进 · 7-8 明确创新 · 9-10 突破性</div>
                 <div><strong>💡 重要性 Sig</strong><br>0-2 无影响 · 3-4 极其有限 · 5-6 中等推动 · 7-8 重要问题 · 9-10 跨领域影响</div>
                 <div><strong>🔍 严谨性 Eff</strong><br>0-2 逻辑断裂 · 3-4 明显漏洞 · 5-6 基本通顺 · 7-8 逻辑严谨 · 9-10 无懈可击</div>
                 <div><strong>📖 清晰度 Cla</strong><br>0-2 严重混乱 · 3-4 表达模糊 · 5-6 基本可读 · 7-8 清晰流畅 · 9-10 精炼优雅</div>
                 <div><strong>⚙️ 可行性 Fea</strong><br>0-2 不可检验 · 3-4 路径模糊 · 5-6 基本可检验 · 7-8 方案务实 · 9-10 可直接执行</div>
             </div>
-            <div style="margin-top: 10px; font-size: 0.85em;">
-                <a href="/rubric" target="_blank" style="color: #4f46e5;">📄 查看完整评估细则 →</a>
-            </div>
-        </details>
+        </div>
 
         {% if existing_score %}
         <div class="flash flash-info" style="margin-bottom: 20px;">

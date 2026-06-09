@@ -28,7 +28,7 @@ import db
 from db import init_db, insert_report, get_all_reports, get_report, get_all_reviewers, get_reviewer, \
     create_reviewer, create_assignment, get_assignments_for_reviewer, get_all_assignments, \
     clear_assignments, save_score, get_score, get_all_scores, get_scores_as_dataframe, \
-    get_progress_summary, get_reviewer_progress
+    get_progress_summary, get_reviewer_progress, reject_assignment
 
 # 设置数据库路径
 db.DB_PATH = DB_PATH
@@ -375,6 +375,27 @@ def admin_stats():
     stats = get_all_statistics(scores_df) if not scores_df.empty else None
 
     return render_template('admin_stats.html', stats=stats)
+
+
+@app.route('/admin/reject/<int:report_id>/<int:reviewer_id>', methods=['POST'])
+def admin_reject(report_id, reviewer_id):
+    """管理员打回评分，让审稿人重新评估"""
+    if session.get('reviewer_id') != 'admin':
+        return jsonify({'success': False, 'error': '需要管理员身份'}), 403
+
+    reject_assignment(report_id, reviewer_id)
+    flash(f'已打回报告 #{report_id} 的评分，审稿人需重新评估', 'success')
+    return redirect(url_for('admin_scores'))
+
+
+@app.route('/admin/scores')
+def admin_scores():
+    """查看所有评分详情，支持打回操作"""
+    if session.get('reviewer_id') != 'admin':
+        return redirect(url_for('admin_login'))
+
+    scores = get_all_scores()
+    return render_template('admin_scores.html', scores=scores)
 
 
 @app.route('/admin/export')

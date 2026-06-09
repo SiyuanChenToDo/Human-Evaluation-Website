@@ -168,6 +168,19 @@ def clear_assignments():
     conn.close()
 
 
+# ---- 打回操作 ----
+
+def reject_assignment(report_id, reviewer_id):
+    """将已完成评分的分配打回为待评状态"""
+    conn = get_db()
+    conn.execute("""
+        UPDATE assignments SET status = 'pending'
+        WHERE report_id = ? AND reviewer_id = ?
+    """, (report_id, reviewer_id))
+    conn.commit()
+    conn.close()
+
+
 # ---- 评分操作 ----
 
 def save_score(report_id, reviewer_id, scores_dict):
