@@ -1,0 +1,12 @@
+=== SOURCE ===
+igh-level capsules** and routing contextual word embeddings (low-level capsules) via **ε-stabilized PCC-guided dynamic routing**—where coupling coefficients update as $\alpha_{ij}^{(t+1)} = \alpha_{ij}^{(t)} + \tanh(\text{PCC}_\epsilon(q_i^{(t)}, w_j)) \cdot \hat{u}_{j|i} \cdot v_i$ with fallback to cosine similarity when $|\text{PCC}| < 0.1$—will yield representations that better align with human-assigned semantic roles (e.g., *bound variable*, *free parameter*) and improve generalization under
+
+=== HTML ===
+<p>igh-level capsules<strong> and routing contextual word embeddings (low-level capsules) via </strong>ε-stabilized PCC-guided dynamic routing<em><em>—where coupling coefficients update as $\alpha_{ij}^{(t+1)} = \alpha_{ij}^{(t)} + \tanh(\text{PCC}_\epsilon(q_i^{(t)}, w_j)) \cdot \hat{u}_{j|i} \cdot v_i$ with fallback to cosine similarity when $|\text{PCC}| < 0.1$—will yield representations that better align with human-assigned semantic roles (e.g., </em>bound variable</em>, <em>free parameter</em>) and improve generalization under</p>
+
+Source has dollars: 4
+HTML has dollars: 4
+HTML has <sub>: 0
+Source has alpha_{ij}: True
+HTML has alpha_{ij}: True
+HTML has alpha<sub>: False

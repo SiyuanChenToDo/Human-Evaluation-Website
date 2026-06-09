@@ -1,0 +1,6 @@
+FOUND at 14776
+PCC-guided dynamic routing</strong>—where coupling coefficients update as $\alpha<sub>ij</sub>^{(t+1)} = \alpha<sub>ij</sub>^{(t)} + \tanh(\text{PCC}_\epsilon(q_i^{(t)}, w_j)) \cdot \hat{u}_{j|i} \cdot v_i$ with fallback to cosine similarity when $|\text{PCC}| < 0.1$—will yield representations that better align with human-assigned semantic roles (e.g., <em>bound variable</em>, <em>free parameter</em>) and improve generalization under symbol permutation by +6–9% F1.</p>
+<p><strong>H₃ (Multiplex I
+
+Total formulas: 51
+Broken: 0
