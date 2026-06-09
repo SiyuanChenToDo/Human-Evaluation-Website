@@ -62,6 +62,10 @@ def render_markdown(content):
     # 0. 修复表格格式：确保表格行前有空行（否则 markdown 不识别为表格）
     content = re.sub(r'([^\n|])\n(\|.*?\n\|[-| ]+\n)', r'\1\n\n\2', content)
 
+    # 0.5. 保护 Unicode 数学公式中的 _{} 和 ^{} 下标/上标（不被 markdown 转成 <em>）
+    content = re.sub(r'(_\{[^}]+\})', protect, content)
+    content = re.sub(r'(\^\{[^}]+\})', protect, content)
+
     # 1. 保护 display math: $$ ... $$（跨行）和 \[ ... \]（跨行）
     content = re.sub(r'\$\$.*?\$\$', protect, content, flags=re.DOTALL)
     content = re.sub(r'\\\[.*?\\\]', protect, content, flags=re.DOTALL)
