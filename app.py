@@ -28,7 +28,7 @@ import db
 from db import init_db, insert_report, get_all_reports, get_report, get_all_reviewers, get_reviewer, \
     create_reviewer, create_assignment, get_assignments_for_reviewer, get_all_assignments, \
     clear_assignments, save_score, get_score, get_all_scores, get_scores_as_dataframe, \
-    get_progress_summary, get_reviewer_progress, reject_assignment
+    get_progress_summary, get_reviewer_progress, reject_assignment, get_all_flags
 
 # 设置数据库路径
 db.DB_PATH = DB_PATH
@@ -320,7 +320,6 @@ def submit_score(report_id):
     if not data:
         return jsonify({'success': False, 'error': '无效的请求数据'}), 400
 
-    # 验证评分
     for dim in ['nov', 'sig', 'eff', 'cla', 'fea']:
         val = data.get(dim)
         if val is None or not isinstance(val, int) or val < 0 or val > 10:
@@ -328,9 +327,31 @@ def submit_score(report_id):
 
     try:
         save_score(report_id, session['reviewer_id'], data)
-        return jsonify({'success': True})
+        # 查找下一篇待评报告
+        next_id = None
+        assignments = get_assignments_for_reviewer(session['reviewer_id'])
+        pending = [a for a in assignments if a['status'] == 'pending' and a['report_id'] != report_id]
+        if pending:
+            next_id = pending[0]['report_id']
+        return jsonify({'success': True, 'next_report_id': next_id})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/report/<int:report_id>/flag', methods=['POST'])
+def flag_report(report_id):
+    """标记报告存在渲染/格式问题"""
+    if 'reviewer_id' not in session or session['reviewer_id'] == 'admin':
+        return jsonify({'success': False, 'error': '需要审稿人身份'}), 403
+
+    conn = db.get_db()
+    conn.execute("""
+        INSERT INTO flags (report_id, reviewer_id, reason) VALUES (?, ?, 'rendering')
+        ON CONFLICT(report_id, reviewer_id) DO NOTHING
+    """, (report_id, session['reviewer_id']))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True})
 
 
 # ---- 路由：评分细则 ----
@@ -470,6 +491,16 @@ def admin_reject(report_id, reviewer_id):
     reject_assignment(report_id, reviewer_id)
     flash(f'已打回报告 #{report_id} 的评分，审稿人需重新评估', 'success')
     return redirect(url_for('admin_scores'))
+
+
+@app.route('/admin/flags')
+def admin_flags():
+    """查看所有被标记的报告"""
+    if session.get('reviewer_id') != 'admin':
+        return redirect(url_for('admin_login'))
+
+    flags = get_all_flags()
+    return render_template('admin_flags.html', flags=flags)
 
 
 @app.route('/admin/scores')

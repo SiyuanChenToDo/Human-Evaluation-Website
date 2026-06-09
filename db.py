@@ -45,6 +45,15 @@ def init_db(db_path):
             UNIQUE(report_id, reviewer_id)
         );
 
+        CREATE TABLE IF NOT EXISTS flags (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            report_id INTEGER NOT NULL REFERENCES reports(id),
+            reviewer_id INTEGER NOT NULL REFERENCES reviewers(id),
+            reason TEXT DEFAULT 'rendering',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(report_id, reviewer_id)
+        );
+
         CREATE TABLE IF NOT EXISTS scores (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             report_id INTEGER NOT NULL REFERENCES reports(id),
@@ -166,6 +175,22 @@ def clear_assignments():
     conn.execute("DELETE FROM assignments")
     conn.commit()
     conn.close()
+
+
+# ---- 标记操作 ----
+
+def get_all_flags():
+    """获取所有被标记的报告"""
+    conn = get_db()
+    rows = conn.execute("""
+        SELECT f.*, r.research_topic, rv.name as reviewer_name
+        FROM flags f
+        JOIN reports r ON f.report_id = r.id
+        JOIN reviewers rv ON f.reviewer_id = rv.id
+        ORDER BY f.created_at DESC
+    """).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
 
 
 # ---- 打回操作 ----

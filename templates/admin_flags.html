@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}标记问题 - 管理后台{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <h1>🚩 被标记的报告（渲染/格式问题）</h1>
+    <p style="margin-bottom: 20px;">审稿人标记的存在渲染或格式问题的报告，可用于打回重评。</p>
+
+    <div class="admin-actions">
+        <a href="{{ url_for('admin') }}" class="btn btn-outline">← 返回总览</a>
+        <a href="{{ url_for('admin_scores') }}" class="btn btn-outline">📝 评分管理</a>
+    </div>
+
+    {% if flags %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>报告ID</th>
+                <th>研究主题</th>
+                <th>标记人</th>
+                <th>标记时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for f in flags %}
+            <tr>
+                <td><a href="{{ url_for('view_report', report_id=f.report_id) }}">#{{ f.report_id }}</a></td>
+                <td>{{ f.research_topic[:80] }}</td>
+                <td>{{ f.reviewer_name }}</td>
+                <td>{{ f.created_at[:16] if f.created_at else '-' }}</td>
+                <td>
+                    <a href="{{ url_for('view_report', report_id=f.report_id) }}" class="btn btn-sm btn-outline">查看</a>
+                    <form method="POST" action="{{ url_for('admin_reject', report_id=f.report_id, reviewer_id=f.reviewer_id) }}" style="display:inline;" onsubmit="return confirm('打回此评分让审稿人重评？')">
+                        <button type="submit" class="btn btn-sm btn-danger">↩ 打回重评</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">✅ 没有被标记的报告</div>
+    {% endif %}
+</div>
+{% endblock %}

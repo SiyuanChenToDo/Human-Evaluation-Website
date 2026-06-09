@@ -431,7 +431,9 @@
         <!-- 按钮 -->
         <div class="action-buttons">
             <a href="{{ url_for('dashboard') }}" class="btn btn-outline">返回工作台</a>
-            <button class="btn btn-primary" onclick="submitScore()">💾 提交评分</button>
+            <button class="btn btn-outline" style="color:#dc2626;border-color:#dc2626;" onclick="flagReport()">🚩 标记问题</button>
+            <button class="btn btn-primary" onclick="submitScore(false)">💾 提交评分</button>
+            <button class="btn btn-primary" onclick="submitScore(true)" style="background:#059669;border-color:#059669;">✅ 提交并下一篇 →</button>
             <span class="save-status" id="saveStatus">✅ 已保存</span>
         </div>
     </div>
@@ -446,7 +448,22 @@ function updateDisplay(dim) {
     display.textContent = slider.value;
 }
 
-function submitScore() {
+function flagReport() {
+    if (!confirm('确认标记此报告存在渲染/格式问题？')) return;
+    fetch('/report/' + reportId + '/flag', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({flagged: true})
+    })
+    .then(res => res.json())
+    .then(result => {
+        if (result.success) {
+            alert('已标记。管理员可在后台查看所有标记的报告。');
+        }
+    });
+}
+
+function submitScore(goNext) {
     const data = {
         nov: parseInt(document.getElementById('novSlider').value),
         sig: parseInt(document.getElementById('sigSlider').value),
@@ -467,7 +484,13 @@ function submitScore() {
         if (result.success) {
             const status = document.getElementById('saveStatus');
             status.classList.add('visible');
-            setTimeout(() => status.classList.remove('visible'), 3000);
+            if (goNext && result.next_report_id) {
+                setTimeout(() => { window.location.href = '/report/' + result.next_report_id; }, 500);
+            } else if (goNext) {
+                setTimeout(() => { alert('所有报告已评估完毕！'); window.location.href = '/dashboard'; }, 500);
+            } else {
+                setTimeout(() => status.classList.remove('visible'), 3000);
+            }
         } else {
             alert('保存失败: ' + (result.error || '未知错误'));
         }
