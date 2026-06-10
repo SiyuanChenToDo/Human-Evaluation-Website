@@ -196,15 +196,17 @@ def get_all_flags():
 # ---- 打回操作 ----
 
 def reject_assignment(report_id, reviewer_id):
-    """将已完成评分的分配打回为待评状态，同时清除旧评分记录"""
+    """将已完成评分的分配打回为待评状态，同时清除旧评分和标记"""
     conn = get_db()
     conn.execute("""
         UPDATE assignments SET status = 'pending'
         WHERE report_id = ? AND reviewer_id = ?
     """, (report_id, reviewer_id))
-    # 删除旧的评分记录，避免重复计数
     conn.execute("""
         DELETE FROM scores WHERE report_id = ? AND reviewer_id = ?
+    """, (report_id, reviewer_id))
+    conn.execute("""
+        DELETE FROM flags WHERE report_id = ? AND reviewer_id = ?
     """, (report_id, reviewer_id))
     conn.commit()
     conn.close()
