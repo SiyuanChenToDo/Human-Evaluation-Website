@@ -79,8 +79,8 @@ def compute_icc(scores_df):
                 results[dim] = round(icc_row['ICC'].values[0], 4)
             else:
                 results[dim] = None
-        except Exception as e:
-            results[dim] = f"计算失败: {str(e)}"
+        except Exception:
+            results[dim] = None
 
     return results
 
@@ -120,8 +120,8 @@ def compute_krippendorff_alpha(scores_df):
                 level_of_measurement='interval'
             )
             results[dim] = round(alpha, 4) if not np.isnan(alpha) else None
-        except Exception as e:
-            results[dim] = f"计算失败: {str(e)}"
+        except Exception:
+            results[dim] = None
 
     return results
 

@@ -43,9 +43,9 @@
             {% for dim, val in stats.icc.items() %}
             <tr>
                 <td><strong>{{ dim|upper }}</strong></td>
-                <td>{{ val if val is not none else '数据不足' }}</td>
+                <td>{{ val if val is not none and val is number else '数据不足' }}</td>
                 <td>
-                    {% if val is not none %}
+                    {% if val is not none and val is number %}
                         {% if val > 0.9 %}🟢 优秀
                         {% elif val > 0.75 %}🟡 良好
                         {% elif val > 0.5 %}🟠 一般
@@ -79,9 +79,9 @@
             {% for dim, val in stats.krippendorff_alpha.items() %}
             <tr>
                 <td><strong>{{ dim|upper }}</strong></td>
-                <td>{{ val if val is not none else '数据不足' }}</td>
+                <td>{{ val if val is not none and val is number else '数据不足' }}</td>
                 <td>
-                    {% if val is not none %}
+                    {% if val is not none and val is number %}
                         {% if val >= 0.8 %}🟢 良好
                         {% elif val >= 0.667 %}🟡 可接受
                         {% else %}🔴 需改进
